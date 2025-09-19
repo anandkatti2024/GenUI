@@ -43,40 +43,28 @@ const Home = () => {
     apiKey: "YOUR_API_KEY"
   });
 
-  // ✅ Generate code
-  async function getResponse() {
-    if (!prompt.trim()) return toast.error("Please describe your component first");
+ const getResponse = async () => {
+  if (!prompt.trim()) return toast.error("Please describe your component first");
 
-    try {
-      setLoading(true);
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: `
-     You are an experienced programmer with expertise in web development and UI/UX design. You create modern, animated, and fully responsive UI components. You are highly skilled in HTML, CSS, Tailwind CSS, Bootstrap, JavaScript, React, Next.js, Vue.js, Angular, and more.
+  try {
+    setLoading(true);
+    const res = await fetch("http://localhost:5000/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, framework: frameWork.value }),
+    });
 
-Now, generate a UI component for: ${prompt}  
-Framework to use: ${frameWork.value}  
-
-Requirements:  
-- The code must be clean, well-structured, and easy to understand.  
-- Optimize for SEO where applicable.  
-- Focus on creating a modern, animated, and responsive UI design.  
-- Include high-quality hover effects, shadows, animations, colors, and typography.  
-- Return ONLY the code, formatted properly in **Markdown fenced code blocks**.  
-- Do NOT include explanations, text, comments, or anything else besides the code.  
-- And give the whole code in a single HTML file.
-      `,
-      });
-
-      setCode(extractCode(response.text));
-      setOutputScreen(true);
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while generating code");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const data = await res.json();
+    setCode(data.text);
+    setOutputScreen(true);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to fetch AI code from backend");
+  } finally {
+    setLoading(false);
+  }
+};
+  
 
   // ✅ Copy Code
   const copyCode = async () => {
